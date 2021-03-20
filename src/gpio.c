@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 
 #include "config.h"
-#include "stm32f0xx_hal.h"
+#include TARGET_HAL_LIB_INCLUDE
 
 //must run before can_init
 void gpio_init()
@@ -67,7 +67,7 @@ void gpio_init()
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(LED2_GPIO_Port, &GPIO_InitStruct);
 
-#if BOARD == BOARD_cannette
+#ifdef BOARD_cannette
 	HAL_GPIO_WritePin(nCANSTBY_Port, nCANSTBY_Pin, GPIO_PIN_RESET);
 	GPIO_InitStruct.Pin = nCANSTBY_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;

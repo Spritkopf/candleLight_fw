@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include "flash.h"
 #include <string.h>
-#include "stm32f0xx_hal_flash.h"
+#include TARGET_HAL_LIB_INCLUDE
 
 #define NUM_CHANNEL 1
 
@@ -69,18 +69,35 @@ uint32_t flash_get_user_id(uint8_t channel)
 
 void flash_flush()
 {
+
 	FLASH_EraseInitTypeDef erase_pages;
+
+#ifdef STM32G4
+	erase_pages.Page = 5; // FIXME Get the right page address
+#else
 	erase_pages.PageAddress = (uint32_t)&flash_data_rom;
+#endif
+
 	erase_pages.NbPages = 1;
 	erase_pages.TypeErase = FLASH_TYPEERASE_PAGES;
 
 	HAL_FLASH_Unlock();
+
+#ifdef STM32G4
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_SR_PROGERR);
+#else
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_SR_PGERR);
+#endif
 
 	uint32_t error = 0;
 	HAL_FLASHEx_Erase(&erase_pages, &error);
 	if (error==0xFFFFFFFF) { // erase finished successfully
+#ifdef STM32G4
+		// FIXME: Add support for flash program. Appears that only 64bit writes are supported.
+		//FLASH_TYPEPROGRAM_FAST
+#else
 		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flash_data_rom.user_id[0], flash_data_ram.user_id[0]);
+#endif
 	}
 	
 	HAL_FLASH_Lock();

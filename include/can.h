@@ -28,19 +28,52 @@ THE SOFTWARE.
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "stm32f0xx_hal.h"
+#include TARGET_HAL_LIB_INCLUDE
+//#include "stm32f0xx_hal.h"
 #include <gs_usb.h>
 
+#ifdef STM32G4
+	#define TARGET_CAN_TYPEDEF FDCAN_GlobalTypeDef
+#else
+	#define TARGET_CAN_TYPEDEF CAN_TypeDef
+#endif
+
+
+#ifdef STM32G4
+	// Constants for fdcan peripheral (G4 series)
+	#define CAN_TSEG1_MIN 2
+	#define CAN_TSEG1_MAX 256
+	#define CAN_TSEG2_MIN 2
+	#define CAN_TSEG2_MAX 128
+	#define CAN_SJW_MAX 128
+	#define CAN_BRP_MIN 1
+	#define CAN_BRP_MAX 512
+	#define CAN_BRP_INCREMENT 1
+#else
+	// Constants for BxCAN peripheral (F0 series)
+	#define CAN_TSEG1_MIN 1
+	#define CAN_TSEG1_MAX 16
+	#define CAN_TSEG2_MIN 1
+	#define CAN_TSEG2_MAX 8
+	#define CAN_SJW_MAX 4
+	#define CAN_BRP_MIN 1
+	#define CAN_BRP_MAX 1024
+	#define CAN_BRP_INCREMENT 1
+#endif
+
+
+
 typedef struct {
-	CAN_TypeDef *instance;
+
+	TARGET_CAN_TYPEDEF *instance;
 	uint16_t brp;
 	uint8_t phase_seg1;
 	uint8_t phase_seg2;
 	uint8_t sjw;
 } can_data_t;
 
-void can_init(can_data_t *hcan, CAN_TypeDef *instance);
-bool can_set_bittiming(can_data_t *hcan, uint16_t brp, uint8_t phase_seg1, uint8_t phase_seg2, uint8_t sjw);
+void can_init(can_data_t *hcan);
+bool can_set_bittiming(can_data_t *hcan, uint32_t brp, uint32_t phase_seg1, uint32_t phase_seg2, uint32_t sjw);
 void can_enable(can_data_t *hcan, bool loop_back, bool listen_only, bool one_shot);
 void can_disable(can_data_t *hcan);
 bool can_is_enabled(can_data_t *hcan);

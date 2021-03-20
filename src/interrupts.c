@@ -26,8 +26,8 @@ THE SOFTWARE.
 
 #include <stdint.h>
 #include <stddef.h>
-#include <stm32f0xx_hal.h>
-#include <stm32f0xx.h>
+#include TARGET_HAL_LIB_INCLUDE
+
 
 void NMI_Handler(void)
 {
@@ -48,11 +48,38 @@ void SysTick_Handler(void)
 }
 
 extern PCD_HandleTypeDef hpcd_USB_FS;
-void USB_Handler(void)
+void USB_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(&hpcd_USB_FS);
 }
 
+
+////// g4 only!!!
+
+
+// Handle USB interrupts
+void USB_LP_IRQHandler(void)
+{
+  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+}
+void USB_HP_IRQHandler(void)
+{
+  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+}
+
+void USBWakeUp_IRQHandler(void)
+{
+  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+}
+
+
+// Handle CAN interrupts
+//void CEC_CAN_IRQHandler(void)
+//{
+//    HAL_CAN_IRQHandler(can_gethandle());
+//}
+
+/*
 void Default_Handler()
 {
     __asm__("BKPT");
@@ -116,4 +143,4 @@ const pFunc InterruptVectorTable[48] =
     0, // int 29: USART3_4
     0, // int 30: CEC_CAN
     USB_Handler, // int 31: USB
-};
+};*/

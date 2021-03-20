@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 
 #include "timer.h"
-#include "stm32f0xx_hal.h"
+#include TARGET_HAL_LIB_INCLUDE
 
 void timer_init()
 {

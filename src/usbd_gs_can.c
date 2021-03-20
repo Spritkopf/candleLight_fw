@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include "config.h"
 #include <stdlib.h>
 #include <string.h>
-#include "stm32f0xx_hal.h"
+#include TARGET_HAL_LIB_INCLUDE
 #include "usbd_desc.h"
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
@@ -268,6 +268,28 @@ static const struct gs_device_config USBD_GS_CAN_dconf = {
 	1  // hardware version
 };
 
+
+#ifdef STM32G4
+// bit timing constraints
+static const struct gs_device_bt_const USBD_GS_CAN_btconst = {
+	GS_CAN_FEATURE_LISTEN_ONLY  // supported features
+	| GS_CAN_FEATURE_LOOP_BACK
+	| GS_CAN_FEATURE_HW_TIMESTAMP
+	| GS_CAN_FEATURE_IDENTIFY
+	| GS_CAN_FEATURE_USER_ID
+	| GS_CAN_FEATURE_PAD_PKTS_TO_MAX_PKT_SIZE,
+	170000000, // can timing base clock FIXME this isn't right
+	CAN_TSEG1_MIN, // tseg1 min
+	CAN_TSEG1_MAX, // tseg1 max
+	CAN_TSEG2_MIN, // tseg2 min
+	CAN_TSEG2_MAX, // tseg2 max
+	CAN_SJW_MAX, // sjw max
+	CAN_BRP_MIN, // brp min
+	CAN_BRP_MAX, // brp_max
+	CAN_BRP_INCREMENT, // brp increment;
+};
+#else
+
 // bit timing constraints
 static const struct gs_device_bt_const USBD_GS_CAN_btconst = {
 	GS_CAN_FEATURE_LISTEN_ONLY  // supported features
@@ -277,15 +299,18 @@ static const struct gs_device_bt_const USBD_GS_CAN_btconst = {
 	| GS_CAN_FEATURE_USER_ID
 	| GS_CAN_FEATURE_PAD_PKTS_TO_MAX_PKT_SIZE,
 	48000000, // can timing base clock
-	1, // tseg1 min
-	16, // tseg1 max
-	1, // tseg2 min
-	8, // tseg2 max
-	4, // sjw max
-	1, // brp min
-	1024, //brp_max
-	1, // brp increment;
+	CAN_TSEG1_MIN, // tseg1 min
+	CAN_TSEG1_MAX, // tseg1 max
+	CAN_TSEG2_MIN, // tseg2 min
+	CAN_TSEG2_MAX, // tseg2 max
+	CAN_SJW_MAX, // sjw max
+	CAN_BRP_MIN, // brp min
+	CAN_BRP_MAX, //brp_max
+	CAN_BRP_INCREMENT, // brp increment;
 };
+#endif
+
+
 
 
 uint8_t USBD_GS_CAN_Init(USBD_HandleTypeDef *pdev, queue_t *q_frame_pool, queue_t *q_from_host, led_data_t *leds)

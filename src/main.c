@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include <string.h>
 
 #include "config.h"
-#include "stm32f0xx_hal.h"
+#include TARGET_HAL_LIB_INCLUDE
 #include "usbd_def.h"
 #include "usbd_desc.h"
 #include "usbd_core.h"
@@ -65,7 +65,7 @@ int main(void)
 	HAL_Init();
 	SystemClock_Config();
 
-	flash_load();
+	//flash_load();
 
 	gpio_init();
 
@@ -82,7 +82,7 @@ int main(void)
 	led_set_mode(&hLED, led_mode_off);
 	timer_init();
 
-	can_init(&hCAN, CAN);
+	can_init(&hCAN);
 	can_disable(&hCAN);
 
 
@@ -106,6 +106,18 @@ int main(void)
 #endif
 
 	while (1) {
+
+//
+//		struct gs_host_frame frame2;
+//		frame2.echo_id = 0x123;
+//		frame2.can_id = 0x123;
+//		frame2.can_dlc = 1;
+//		frame2.channel = 0;
+//		frame2.flags = 0;
+//		frame2.reserved = 0;
+//		frame2.data[0] = 0xde;
+//		can_send(&hCAN, &frame2);
+
 		struct gs_host_frame *frame = queue_pop_front(q_from_host);
 		if (frame != 0) { // send can message from host
 			if (can_send(&hCAN, frame)) {
@@ -180,6 +192,68 @@ void HAL_MspInit(void)
 
 void SystemClock_Config(void)
 {
+#ifdef STM32G4
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+    /** Configure the main internal regulator output voltage
+    */
+    HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
+    /** Initializes the CPU, AHB and APB busses clocks
+    */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSI48;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV4;
+    RCC_OscInitStruct.PLL.PLLN = 85;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+      while(1);
+    }
+    /** Initializes the CPU, AHB and APB busses clocks
+    */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                                |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8) != HAL_OK)
+    {
+      while(1);
+    }
+    /** Initializes the peripherals clocks
+    */
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB|RCC_PERIPHCLK_FDCAN;
+    PeriphClkInit.FdcanClockSelection = RCC_FDCANCLKSOURCE_PCLK1;
+    PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+    {
+      while(1);
+    }
+
+    /** Configures CRS
+         */
+    RCC_CRSInitTypeDef pInit = {0};
+	pInit.Prescaler = RCC_CRS_SYNC_DIV1;
+	pInit.Source = RCC_CRS_SYNC_SOURCE_USB;
+	pInit.Polarity = RCC_CRS_SYNC_POLARITY_RISING;
+	pInit.ReloadValue = __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000,1000);
+	pInit.ErrorLimitValue = 34;
+	pInit.HSI48CalibrationValue = 32;
+
+	HAL_RCCEx_CRSConfig(&pInit);
+    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+
+#else
 	RCC_OscInitTypeDef RCC_OscInitStruct;
 	RCC_ClkInitTypeDef RCC_ClkInitStruct;
 	RCC_PeriphCLKInitTypeDef PeriphClkInit;
@@ -217,6 +291,7 @@ void SystemClock_Config(void)
 
 	/* SysTick_IRQn interrupt configuration */
 	HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+#endif
 }
 
 bool send_to_host_or_enqueue(struct gs_host_frame *frame)

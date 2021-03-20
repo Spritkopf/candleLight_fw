@@ -34,8 +34,14 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* hpcd)
 {
 	if(hpcd->Instance==USB) {
 		__HAL_RCC_USB_CLK_ENABLE();
+
+#ifdef STM32G4
+	    HAL_NVIC_SetPriority(USB_LP_IRQn, 1, 0);
+	    HAL_NVIC_EnableIRQ(USB_LP_IRQn);
+#else
 		HAL_NVIC_SetPriority(USB_IRQn, 1, 0);
 		HAL_NVIC_EnableIRQ(USB_IRQn);
+#endif
 	}
 }
 
@@ -43,7 +49,11 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* hpcd)
 {
 	if(hpcd->Instance==USB) {
 		__HAL_RCC_USB_CLK_DISABLE();
+#ifdef STM32G4
+	    HAL_NVIC_DisableIRQ(USB_LP_IRQn);
+#else
 		HAL_NVIC_DisableIRQ(USB_IRQn);
+#endif
 	}
 }
 
@@ -110,6 +120,10 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	hpcd_USB_FS.Init.speed = PCD_SPEED_FULL;
 	hpcd_USB_FS.Init.ep0_mps = DEP0CTL_MPS_64;
 	hpcd_USB_FS.Init.phy_itface = PCD_PHY_EMBEDDED;
+#ifdef STM32G4
+	hpcd_USB_FS.Init.Sof_enable = ENABLE;
+	hpcd_USB_FS.Init.battery_charging_enable = DISABLE;
+#endif
 	hpcd_USB_FS.Init.low_power_enable = DISABLE;
 	hpcd_USB_FS.Init.lpm_enable = DISABLE;
 	HAL_PCD_Init(&hpcd_USB_FS);
