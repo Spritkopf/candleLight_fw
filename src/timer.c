@@ -38,7 +38,11 @@ void timer_init()
 	TIM2->CCMR1 = 0;
 	TIM2->CCMR2 = 0;
 	TIM2->CCER = 0;
-	TIM2->PSC = 48-1; // run @48MHz/480 = 1MHz = 1us
+#ifdef STM32G4
+	TIM2->PSC = 170-1; // 170MHz / 170 = 1MHz = 1us
+#else
+	TIM2->PSC = 48-1; // run @48MHz/48 = 1MHz = 1us
+#endif
 	TIM2->ARR = 0xFFFFFFFF;
 	TIM2->CR1 |= TIM_CR1_CEN;
 	TIM2->EGR = TIM_EGR_UG;
