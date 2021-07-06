@@ -390,6 +390,9 @@ bool can_send(can_data_t *hcan, struct gs_host_frame *frame)
 	if(frame->can_id & CAN_RTR_FLAG)
 		frame_header.TxFrameType = FDCAN_REMOTE_FRAME;
 
+    // Set ID
+    frame_header.Identifier = frame->can_id;
+
 	 // Convert to HAL code
     frame_header.DataLength = frame->can_dlc << 16;
 
