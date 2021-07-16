@@ -85,8 +85,8 @@ THE SOFTWARE.
 	#define LED2_Mode GPIO_MODE_OUTPUT_PP
 	#define LED2_Active_High 0
 
-#elif defined BOARD_canable_flex
-	#define USBD_PRODUCT_STRING_FS			(uint8_t*) "canable flex gs_usb"
+#elif defined BOARD_canable2
+	#define USBD_PRODUCT_STRING_FS			(uint8_t*) "canable2 gs_usb"
 	#define USBD_MANUFACTURER_STRING		(uint8_t*) "canable.io"
 	#define DFU_INTERFACE_STRING_FS			(uint8_t*) "canable firmware upgrade interface"
 

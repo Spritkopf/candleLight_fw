@@ -1,6 +1,6 @@
 project(STM32_HAL)
 
-include(../../cmake/slalib.cmake)
+include(../../cmake/stmultitarget.cmake)
 
 set(SOURCES
     cmsis/dsp/inc/arm_math.h
@@ -88,6 +88,6 @@ set(INCLUDE_DIRS
 
 )
 
-slalib_add_hal_library("STM32G4" "cortex-m4" "${SOURCES}" "${INCLUDE_DIRS}")
+stmulti_add_hal_library("STM32G4" "cortex-m4" "${SOURCES}" "${INCLUDE_DIRS}")
 
     

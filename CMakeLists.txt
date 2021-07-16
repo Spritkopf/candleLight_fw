@@ -251,7 +251,7 @@ endfunction()
 
 # Add all the boards/processors we would like to compile for
 add_stm32_target("canable" "stm32f042x6")
-add_stm32_target("canable_flex" "stm32g431xx")
+add_stm32_target("canable2" "stm32g431xx")
 
 message("\r\n")
 message("You may now:\n\t-compile all targets ('make')\n\t-compile a single target (e.g. 'make mytarget_fw'")
