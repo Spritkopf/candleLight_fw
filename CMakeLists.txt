@@ -13,8 +13,9 @@ add_compile_options(
     -Os -g3
 )
 
+#TODO make extra set for F4
 add_link_options(
-    -mcpu=cortex-m0 -mthumb -O
+    -mcpu=cortex-m4 -mthumb -O
     -Wall -Wextra -g3
     -nostartfiles -Xlinker --gc-sections --specs=nano.specs
     -T ${CMAKE_SOURCE_DIR}/ldscripts/ldscript.ld
